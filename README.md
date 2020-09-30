@@ -1,1 +1,1 @@
-# dataservice-publisher-store
+# dataservice-publisher-triplestore
