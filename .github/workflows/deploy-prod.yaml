@@ -42,9 +42,9 @@ jobs:
           service_account_email: ${{ secrets.DIGDIR_FDK_PROD_EMAIL }}
           service_account_key: ${{ secrets.DIGDIR_FDK_PROD_AUTODEPLOY }}
       - run: |
-          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-triplestore" --snapshot-names "autogcs-autodeploy-prod-dataservice-publisher-triplestore-${GITHUB_SHA::8}" --zone "europe-north1-a" &
+          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-triplestore" --snapshot-names "autogcs-autodeploy-prod-ds-p-triplestore-${GITHUB_SHA::8}" --zone "europe-north1-a" &
           wait
-          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-autodeploy-prod-dataservice-publisher-triplestore-${GITHUB_SHA::8}" --labels="snapshotdays="14""
+          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-autodeploy-prod-ds-p-triplestore-${GITHUB_SHA::8}" --labels="snapshotdays="14""
 
       - name: Get kubeconfig file from GKE
         uses: machine-learning-apps/gke-kubeconfig@master
