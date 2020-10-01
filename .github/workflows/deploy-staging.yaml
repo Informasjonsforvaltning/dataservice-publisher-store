@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build and deploy to staging environment when pull request is created
+    name: Fetch image and deploy to staging environment when pull request is created
     runs-on: ubuntu-latest
 
     steps:

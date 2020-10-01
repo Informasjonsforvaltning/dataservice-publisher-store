@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-demo:
-    name: Deploy latest production image to demo environment
+    name: Fetch image and deploy to demo environment on repository dispatch
     runs-on: ubuntu-latest
 
     steps:

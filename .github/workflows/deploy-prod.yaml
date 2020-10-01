@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-test-and-deploy-production:
-    name: Build, test, publish and deploy to production environment on merge to master branch
+    name: Fetch image and deploy to production environment on merge to master branch
     runs-on: ubuntu-latest
 
     steps:
