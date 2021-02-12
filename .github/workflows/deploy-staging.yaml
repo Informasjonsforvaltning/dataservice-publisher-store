@@ -2,31 +2,33 @@ name: Deploy to staging
 
 on:
   pull_request:
+    types: [ready_for_review, opened, reopened, synchronize]
     branches:
       - master
 
 jobs:
   build-and-deploy:
-    name: Fetch image and deploy to staging environment when pull request is created
+    name: Build and deploy to staging environment when pull request is created
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
 
     steps:
       - uses: actions/checkout@v2
 
-      # Setup gcloud CLI
-      - uses: google-github-actions/setup-gcloud@master
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@master
         with:
           service_account_email: ${{ secrets.GCP_SA_DIGDIR_FDK_GCR_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_DIGDIR_FDK_GCR_KEY }}
 
-      # Configure docker to use the gcloud command-line tool as a credential helper
-      - run: gcloud auth configure-docker
+      - name: Configure docker to use the gcloud command-line tool as a credential helper
+        run: gcloud auth configure-docker eu.gcr.io
 
       - name: Build Docker image with GitHub commit sha tag and staging tag
         run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:staging_latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:$GITHUB_SHA
 
       - name: Publish docker image to Google Cloud
-        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore
+        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore -a
 
       - name: Apply Helm template
         run: |
