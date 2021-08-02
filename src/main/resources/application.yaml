@@ -11,7 +11,7 @@ application:
     context-path: fuseki
     store-path: store
     dataset-names:
-      - dataservices
+      - ds
     enable-verbose-logging: false
 
 ---
