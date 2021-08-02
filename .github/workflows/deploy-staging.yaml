@@ -25,16 +25,16 @@ jobs:
         run: gcloud auth configure-docker eu.gcr.io
 
       - name: Build Docker image with GitHub commit sha tag and staging tag
-        run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:staging_latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:$GITHUB_SHA
+        run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:staging_latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:$GITHUB_SHA
 
       - name: Publish docker image to Google Cloud
-        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore -a
+        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service -a
 
       - name: Apply Helm template
         run: |
           helm repo add fdk https://informasjonsforvaltning.github.io/helm-chart/
-          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-triplestore
-          helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:$GITHUB_SHA" -f ./helm/dataservice-publisher-triplestore/values/staging.yaml ./helm/dataservice-publisher-triplestore/ > ./kubectlapply.yaml
+          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-sparql-service
+          helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:$GITHUB_SHA" -f ./helm/dataservice-publisher-sparql-service/values/staging.yaml ./helm/dataservice-publisher-sparql-service/ > ./kubectlapply.yaml
           chmod o+w ./kubectlapply.yaml
           cat kubectlapply.yaml
 
@@ -57,7 +57,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          author_name: 'Application: dataservice-publisher-triplestore | Environment: staging'
+          author_name: 'Application: dataservice-publisher-sparql-service | Environment: staging'
           fields: commit,author,workflow
         env:
           GITHUB_TOKEN: ${{ github.token }}

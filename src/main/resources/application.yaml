@@ -1,0 +1,24 @@
+spring:
+  rabbitmq:
+    host: ${RABBIT_HOST:rabbitmq}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME}
+    password: ${RABBIT_PASSWORD}
+application:
+  fuseki:
+    realm: fdk
+    port: 8080
+    context-path: fuseki
+    store-path: store
+    dataset-names:
+      - dataservices
+    enable-verbose-logging: false
+
+---
+spring:
+  config.activate.on-profile: develop
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

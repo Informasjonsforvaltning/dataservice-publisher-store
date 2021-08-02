@@ -1,3 +1,3 @@
-# dataservice-publisher-triplestore
+# dataservice-publisher-sparql-service
 
-A service realizing a triplestore. Current implementation uses https://hub.docker.com/r/stain/jena-fuseki
+A service realizing a triplestore, current implementation using org.apache.jena/jena-fuseki-main

@@ -15,8 +15,8 @@ jobs:
       - name: Apply Helm template
         run: |
           helm repo add fdk https://informasjonsforvaltning.github.io/helm-chart/
-          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-triplestore
-          helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:${{ github.event.client_payload.sha }}" -f ./helm/dataservice-publisher-triplestore/values/demo.yaml ./helm/dataservice-publisher-triplestore/ > ./kubectlapply.yaml
+          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-sparql-service
+          helm template --set DOCKER_IMAGE_NAME="eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:${{ github.event.client_payload.sha }}" -f ./helm/dataservice-publisher-sparql-service/values/demo.yaml ./helm/dataservice-publisher-sparql-service/ > ./kubectlapply.yaml
           chmod o+w ./kubectlapply.yaml
           cat kubectlapply.yaml
 
@@ -41,7 +41,7 @@ jobs:
           mention: 'channel'
           if_mention: failure
           status: ${{ job.status }}
-          author_name: 'Application: dataservice-publisher-triplestore | Environment: demo'
+          author_name: 'Application: dataservice-publisher-sparql-service | Environment: demo'
           fields: commit,author,workflow
         env:
           GITHUB_TOKEN: ${{ github.token }}

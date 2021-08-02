@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build-test-and-deploy-production:
@@ -23,16 +24,16 @@ jobs:
         run: gcloud auth configure-docker eu.gcr.io
 
       - name: Build Docker image with GitHub commit sha tag and staging tag
-        run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore:$GITHUB_SHA
+        run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:$GITHUB_SHA
 
       - name: Publish docker image to Google Cloud
-        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-triplestore -a
+        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service -a
 
       - name: Apply Helm template
         run: |
           helm repo add fdk https://informasjonsforvaltning.github.io/helm-chart/
-          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-triplestore
-          helm template --set DOCKER_IMAGE_NAME="stain/jena-fuseki" -f ./helm/dataservice-publisher-triplestore/values/prod.yaml ./helm/dataservice-publisher-triplestore/ > ./kubectlapply.yaml
+          helm fetch --untar --untardir ./helm fdk/dataservice-publisher-sparql-service
+          helm template --set DOCKER_IMAGE_NAME="stain/jena-fuseki" -f ./helm/dataservice-publisher-sparql-service/values/prod.yaml ./helm/dataservice-publisher-sparql-service/ > ./kubectlapply.yaml
           chmod o+w ./kubectlapply.yaml
           cat kubectlapply.yaml
 
@@ -42,9 +43,9 @@ jobs:
           service_account_email: ${{ secrets.DIGDIR_FDK_PROD_EMAIL }}
           service_account_key: ${{ secrets.DIGDIR_FDK_PROD_AUTODEPLOY }}
       - run: |
-          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-triplestore" --snapshot-names "autogcs-autodeploy-prod-ds-p-triplestore-${GITHUB_SHA::8}" --zone "europe-north1-a" &
+          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-sparql-service" --snapshot-names "autogcs-autodeploy-prod-ds-p-sparql-service-${GITHUB_SHA::8}" --zone "europe-north1-a" &
           wait
-          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-autodeploy-prod-ds-p-triplestore-${GITHUB_SHA::8}" --labels="snapshotdays="14""
+          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-autodeploy-prod-ds-p-sparql-service-${GITHUB_SHA::8}" --labels="snapshotdays="14""
 
       - name: Get kubeconfig file from GKE
         uses: machine-learning-apps/gke-kubeconfig@master
@@ -67,7 +68,7 @@ jobs:
           mention: 'channel'
           if_mention: failure
           status: ${{ job.status }}
-          author_name: 'Application: dataservice-publisher-triplestore | Environment: prod'
+          author_name: 'Application: dataservice-publisher-sparql-service | Environment: prod'
           fields: commit,author,workflow,message
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -75,7 +76,7 @@ jobs:
         if: always()
 
       - name: Trigger deploy to demo
-        uses: peter-evans/repository-dispatch@master
+        uses: peter-evans/repository-dispatch@main
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
           event-type: deploy-demo
