@@ -1,0 +1,13 @@
+application:
+  fuseki:
+    realm: fdk
+    port: 8080
+    context-path: fuseki
+    store-path: store
+    dataset-names:
+      - ds
+    enable-verbose-logging: false
+
+---
+spring:
+  config.activate.on-profile: develop
