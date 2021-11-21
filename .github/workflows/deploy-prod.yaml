@@ -12,22 +12,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Setup gcloud CLI
         uses: google-github-actions/setup-gcloud@master
         with:
-          service_account_email: ${{ secrets.GCP_SA_DIGDIR_FDK_GCR_EMAIL }}
           service_account_key: ${{ secrets.GCP_SA_DIGDIR_FDK_GCR_KEY }}
+          export_default_credentials: true
 
       - name: Configure docker to use the gcloud command-line tool as a credential helper
         run: gcloud auth configure-docker eu.gcr.io
 
-      - name: Build Docker image with GitHub commit sha tag and staging tag
-        run: docker build . -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:latest -t eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service:$GITHUB_SHA
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-      - name: Publish docker image to Google Cloud
-        run: docker -- push eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service -a
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: eu.gcr.io/digdir-fdk-infra/dataservice-publisher-sparql-service
+          flavor: |
+            latest=true
+          tags: |
+            type=raw,value=${{ github.sha }},priority=1000
+            type=ref,event=branch
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args:  |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       - name: Apply Helm template
         run: |
@@ -39,30 +71,29 @@ jobs:
           chmod o+w ./kubectlapply.yaml
           cat kubectlapply.yaml
 
-      - name: Create backup snapshot
+      - name: Setup gcloud CLI for snapshot & deploy
         uses: google-github-actions/setup-gcloud@master
         with:
-          service_account_email: ${{ secrets.DIGDIR_FDK_PROD_EMAIL }}
           service_account_key: ${{ secrets.DIGDIR_FDK_PROD_AUTODEPLOY }}
-      - run: |
-          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-sparql-service" --snapshot-names "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}" --zone "europe-north1-a" &
+          export_default_credentials: true
+
+      - name: Backup snapshot
+        run: |
+          gcloud compute --project digdir-fdk-prod disks snapshot "fdk-prod-dataservice-publisher-sparql-service" \
+          --snapshot-names "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}" --zone "europe-north1-a" &
           wait
-          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}" --labels="snapshotdays="14""
+          gcloud compute --project digdir-fdk-prod snapshots add-labels "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}" \
+          --labels="snapshotdays="14""
 
-      - name: Get kubeconfig file from GKE
-        uses: machine-learning-apps/gke-kubeconfig@master
-        with:
-          application_credentials: ${{ secrets.DIGDIR_FDK_PROD_AUTODEPLOY }}
-          project_id: digdir-fdk-prod
-          location_zone: europe-north1-a
-          cluster_name: digdir-fdk-prod
-
-      - name: Deploy to production
-        uses: docker://bitnami/kubectl:latest
-        env:
-          KUBECONFIG: '/github/workspace/.kube/config'
-        with:
-          args: "apply -f ./kubectlapply.yaml --force"
+      - name: Deploy to GCP & check status
+        run: |
+          gcloud container clusters get-credentials digdir-fdk-prod --region europe-north1-a --project digdir-fdk-prod
+          kubectl apply -f ./kubectlapply.yaml --force
+          if ! kubectl --namespace=prod rollout status deployment dataservice-publisher-sparql-service; then
+          kubectl --namespace=prod rollout undo deployment dataservice-publisher-sparql-service
+          kubectl --namespace=prod rollout status deployment dataservice-publisher-sparql-service
+          exit 1
+          fi
 
       - name: Notify slack
         uses: 8398a7/action-slack@v3
