@@ -72,7 +72,7 @@ jobs:
           chmod o+w ./kubectlapply.yaml
           cat kubectlapply.yaml
 
-      - name: Setup gcloud CLI for deploy
+      - name: Auth gcloud CLI for deploy
         uses: google-github-actions/auth@main
         with:
           credentials_json: ${{ secrets.DIGDIR_FDK_DEV_AUTODEPLOY }}
