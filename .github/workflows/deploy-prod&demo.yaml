@@ -13,15 +13,15 @@ jobs:
     with:
       app_name: dataservice-publisher-sparql-service
       caller_sha: ${{ github.sha }}
-      caller_short_sha: ${GITHUB_SHA::8}
+      caller_short_sha: "${GITHUB_SHA::8}"
       repo: ${{ github.repository }}
       actor: ${{ github.actor }}
       environment: prod
       cluster: digdir-fdk-prod
       snapshot_disk: fdk-prod-dataservice-publisher-sparql-service
-      snapshot_name: autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}
+      snapshot_name: "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}"
       snapshot_zone: europe-north1-a
-      snapshot_label: autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}
+      snapshot_label: "autogcs-ad-prod-ds-publisher-sparql-service-${GITHUB_SHA::8}"
     secrets:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GCP_SA_DIGDIR_FDK_GCR_KEY: ${{ secrets.GCP_SA_DIGDIR_FDK_GCR_KEY }}
