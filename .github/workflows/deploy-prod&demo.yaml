@@ -33,7 +33,6 @@ jobs:
     with:
       app_name: dataservice-publisher-sparql-service
       caller_sha: ${{ github.sha }}
-      caller_short_sha: ${GITHUB_SHA::8}
       repo: ${{ github.repository }}
       actor: ${{ github.actor }}
       environment: demo
