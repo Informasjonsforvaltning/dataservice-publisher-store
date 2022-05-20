@@ -7,11 +7,3 @@ services:
       - 8080:8080
     environment:
       - LOG_LEVEL=DEBUG
-    networks:
-      fdk:
-        aliases:
-          - dataservice-publisher-sparql-service
-
-networks:
-  fdk:
-    name: fdk
