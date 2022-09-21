@@ -14,4 +14,16 @@ public class RabbitMQConfig {
         return new AnonymousQueue();
     }
 
+    @Bean
+    public TopicExchange compactExchange() {
+        return new TopicExchange("fdk-sparql-service-compact", false, false);
+    }
+
+    @Bean
+    Binding updatesBinding(Queue compactQueue, TopicExchange compactExchange) {
+        return BindingBuilder
+                .bind(compactQueue)
+                .to(compactExchange)
+                .with("fuseki.compact");
+    }
 }
