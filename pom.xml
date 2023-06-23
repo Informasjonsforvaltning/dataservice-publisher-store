@@ -24,7 +24,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <jena.version>4.7.0</jena.version>
+        <jena.version>4.8.0</jena.version>
     </properties>
 
     <dependencies>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.2</version>
+            <version>7.4</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
