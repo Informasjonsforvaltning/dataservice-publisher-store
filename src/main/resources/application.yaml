@@ -12,7 +12,7 @@ application:
     store-path: store
     dataset-names:
       - ds
-    enable-verbose-logging: false
+    enable-verbose-logging: true
 
 ---
 spring:
